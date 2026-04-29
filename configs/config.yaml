@@ -1,0 +1,31 @@
+# Default configuration for PredANN music identification from EEG
+
+data:
+  raw_dir: data/raw            # raw NMED-T directory
+  processed_dir: data/processed
+  train_stride: 200            # stride during training (every 200 steps)
+  val_stride: 1
+  delay_ms: 200                # optimal EEG delay relative to audio onset (Table 2)
+  window_size_s: 3             # training window in seconds
+  max_duration_s: 240          # 4-minute truncation per recording
+  test_size: 0.25              # 75/25 train/val split
+
+model:
+  encoder_type: "2d"           # "2d" (best) or "1d" (ablation)
+  embed_dim: 128
+  n_classes: 10
+  eeg_channels: 128
+  audio_sample_rate: 22050
+  n_mels: 64
+
+training:
+  epochs: 6000
+  batch_size: 64
+  lr: 0.001
+  pred_ann_weight: 0.05        # λ — optimal value from Table 1
+  temperature: 0.07
+  seed: 42                     # seeds 0, 1, 2, 42 tested in paper
+
+evaluation:
+  eval_lengths_s: [3, 4, 5, 6, 7]   # Table 5: extended evaluation
+  aggregation_methods: ["mean", "max", "majority"]
