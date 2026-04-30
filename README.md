@@ -41,7 +41,11 @@ We use the **NMED-T** (Naturalistic Music EEG Dataset-Tempo) dataset:
 ## Installation
 
 ```bash
-pip install -r requirements.txt
+# uv がない場合は先にインストール
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 依存ライブラリをインストール（仮想環境も自動作成）
+uv sync
 ```
 
 ## Usage
@@ -99,7 +103,8 @@ music_decoding_project/
 │   ├── models.py            # CNN2DEncoder, PredANNModel
 │   ├── preprocessing.py     # RobustScaler, windowing, delay
 │   └── utils.py             # metrics, McNemar's test, sliding window eval
-├── requirements.txt
+├── pyproject.toml
+├── uv.lock
 └── README.md
 ```
 
