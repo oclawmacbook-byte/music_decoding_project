@@ -57,10 +57,7 @@ Real NMED-T data requires a separate download. To verify the pipeline end-to-end
 Pre-generated files already exist in `data/dummy/`. Run this only if you want to recreate them:
 
 ```bash
-python scripts/create_dummy_dataset.py \
-    --out_dir data/dummy \
-    --n_subjects 5 \
-    --windows_per_song 8
+uv run scripts/create_dummy_dataset.py --out_dir data/dummy --n_subjects 5 --windows_per_song 8
 ```
 
 This produces NumPy arrays for 5 synthetic subjects × 10 songs with realistic shapes (128 EEG channels, 125 Hz).
@@ -68,14 +65,7 @@ This produces NumPy arrays for 5 synthetic subjects × 10 songs with realistic s
 ### Step 2 — train on dummy data
 
 ```bash
-python scripts/train.py \
-    --data_dir data/dummy \
-    --model_type 2d \
-    --pred_ann_weight 0.05 \
-    --seed 42 \
-    --epochs 5 \
-    --batch_size 32 \
-    --output_dir runs/dummy_test
+uv run scripts/train.py --data_dir data/dummy --model_type 2d --pred_ann_weight 0.05 --seed 42 --epochs 5 --batch_size 32 --output_dir runs/dummy_test
 ```
 
 Training 5 epochs takes roughly 15–20 minutes on CPU. Accuracy will be low (random-chance level, ~0.4 for 10 classes) because the data is synthetic — the purpose is confirming the code runs without errors.
@@ -83,10 +73,7 @@ Training 5 epochs takes roughly 15–20 minutes on CPU. Accuracy will be low (ra
 ### Step 3 — evaluate
 
 ```bash
-python scripts/evaluate.py \
-    --model_path runs/dummy_test/best_model.pt \
-    --data_dir data/dummy \
-    --eval_length_s 3
+uv run scripts/evaluate.py --model_path runs/dummy_test/best_model.pt --data_dir data/dummy --eval_length_s 3
 ```
 
 Expected output: `results.json` written to `runs/dummy_test/` with per-song and per-subject accuracy breakdowns.
@@ -98,36 +85,24 @@ Expected output: `results.json` written to `runs/dummy_test/` with per-song and 
 ### 1. Download & preprocess NMED-T data
 
 ```bash
-python scripts/preprocess_data.py \
-    --raw_dir /path/to/nmedt_raw \
-    --out_dir data/processed
+uv run scripts/preprocess_data.py --raw_dir /path/to/nmedt_raw --out_dir data/processed
 ```
 
 ### 2. Train the model
 
 ```bash
-python scripts/train.py \
-    --data_dir data/processed \
-    --model_type 2d \
-    --pred_ann_weight 0.05 \
-    --seed 42 \
-    --epochs 6000 \
-    --output_dir runs/exp1
+uv run scripts/train.py --data_dir data/processed --model_type 2d --pred_ann_weight 0.05 --seed 42 --epochs 6000 --output_dir runs/exp1
 ```
 
 To reproduce Table 1 (λ comparison across seeds):
 ```bash
-python experiments/exp1_preliminary.py
+uv run experiments/exp1_preliminary.py
 ```
 
 ### 3. Evaluate
 
 ```bash
-python scripts/evaluate.py \
-    --model_path runs/exp1/best_model.pt \
-    --data_dir data/processed \
-    --eval_length_s 3 \
-    --aggregation mean
+uv run scripts/evaluate.py --model_path runs/exp1/best_model.pt --data_dir data/processed --eval_length_s 3 --aggregation mean
 ```
 
 ## Repository structure
