@@ -64,16 +64,38 @@ This produces NumPy arrays for 5 synthetic subjects × 10 songs with realistic s
 
 ### Step 2 — train on dummy data
 
+CPU (default — device is auto-detected if omitted):
 ```bash
 uv run scripts/train.py --data_dir data/dummy --model_type 2d --pred_ann_weight 0.05 --seed 42 --epochs 5 --batch_size 32 --output_dir runs/dummy_test
+```
+
+NVIDIA GPU:
+```bash
+uv run scripts/train.py --data_dir data/dummy --model_type 2d --pred_ann_weight 0.05 --seed 42 --epochs 5 --batch_size 32 --output_dir runs/dummy_test --device cuda
+```
+
+Apple Silicon (MPS):
+```bash
+uv run scripts/train.py --data_dir data/dummy --model_type 2d --pred_ann_weight 0.05 --seed 42 --epochs 5 --batch_size 32 --output_dir runs/dummy_test --device mps
 ```
 
 Training 5 epochs takes roughly 15–20 minutes on CPU. Accuracy will be low (random-chance level, ~0.4 for 10 classes) because the data is synthetic — the purpose is confirming the code runs without errors.
 
 ### Step 3 — evaluate
 
+CPU:
 ```bash
 uv run scripts/evaluate.py --model_path runs/dummy_test/best_model.pt --data_dir data/dummy --eval_length_s 3
+```
+
+NVIDIA GPU:
+```bash
+uv run scripts/evaluate.py --model_path runs/dummy_test/best_model.pt --data_dir data/dummy --eval_length_s 3 --device cuda
+```
+
+Apple Silicon (MPS):
+```bash
+uv run scripts/evaluate.py --model_path runs/dummy_test/best_model.pt --data_dir data/dummy --eval_length_s 3 --device mps
 ```
 
 Expected output: `results.json` written to `runs/dummy_test/` with per-song and per-subject accuracy breakdowns.
@@ -94,6 +116,11 @@ uv run scripts/preprocess_data.py --raw_dir /path/to/nmedt_raw --out_dir data/pr
 uv run scripts/train.py --data_dir data/processed --model_type 2d --pred_ann_weight 0.05 --seed 42 --epochs 6000 --output_dir runs/exp1
 ```
 
+GPU を使う場合は `--device cuda`（NVIDIA）または `--device mps`（Apple Silicon）を追加してください。省略すると自動検出されます:
+```bash
+uv run scripts/train.py --data_dir data/processed --model_type 2d --pred_ann_weight 0.05 --seed 42 --epochs 6000 --output_dir runs/exp1 --device cuda
+```
+
 To reproduce Table 1 (λ comparison across seeds):
 ```bash
 uv run experiments/exp1_preliminary.py
@@ -102,7 +129,7 @@ uv run experiments/exp1_preliminary.py
 ### 3. Evaluate
 
 ```bash
-uv run scripts/evaluate.py --model_path runs/exp1/best_model.pt --data_dir data/processed --eval_length_s 3 --aggregation mean
+uv run scripts/evaluate.py --model_path runs/exp1/best_model.pt --data_dir data/processed --eval_length_s 3 --aggregation mean --device cuda
 ```
 
 ## Repository structure
