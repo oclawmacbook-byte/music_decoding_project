@@ -48,6 +48,22 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 uv sync
 ```
 
+### NVIDIA GPU（CUDA）を使う場合
+
+`uv sync` でインストールされる PyTorch はデフォルトで CPU ビルドです。CUDA を有効にするには、`uv sync` 後に以下のコマンドで CUDA 対応版に差し替えてください。
+
+CUDA 12.4（最新の安定版）:
+```bash
+uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu124
+```
+
+CUDA 11.8（古い環境向け）:
+```bash
+uv pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+インストール後、`--device cuda` オプションを指定して実行してください。インストールされている CUDA バージョンは `nvidia-smi` で確認できます。
+
 ## Quick test with dummy data
 
 Real NMED-T data requires a separate download. To verify the pipeline end-to-end without it, use the synthetic dummy dataset bundled in this repository.
