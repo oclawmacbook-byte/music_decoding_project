@@ -40,24 +40,52 @@ def load_nmedt_eeg(data_dir: str | Path, subject_id: int) -> tuple[np.ndarray, n
     return eeg, labels
 
 
+def _load_audio_from_mat(path: Path, target_sr: int = 22050) -> np.ndarray:
+    """Extract audio waveform from a .mat file and resample to target_sr."""
+    import librosa
+
+    data = scipy.io.loadmat(str(path))
+    # NED-T stores audio under keys like 'audio', 'waveform', 'data', 'stim'
+    audio_keys = [k for k in data if not k.startswith("_")]
+    # Prefer keys containing recognisable audio-related names
+    preferred = [k for k in audio_keys if any(kw in k.lower() for kw in ("audio", "wav", "stim", "data", "wave"))]
+    key = preferred[0] if preferred else audio_keys[0]
+    audio = np.array(data[key], dtype=np.float64).squeeze()
+
+    # If a sampling-rate field exists, use it; otherwise assume 44100 Hz
+    sr_keys = [k for k in data if not k.startswith("_") and "sr" in k.lower()]
+    src_sr = int(np.array(data[sr_keys[0]]).flat[0]) if sr_keys else 44100
+
+    if src_sr != target_sr:
+        audio = librosa.resample(audio.astype(np.float32), orig_sr=src_sr, target_sr=target_sr)
+    return audio.astype(np.float32)
+
+
 def load_nmedt_audio(data_dir: str | Path) -> dict[int, np.ndarray]:
-    """Load the 10 song audio clips from NMED-T (WAV or NPY pre-extracted)."""
+    """Load the 10 song audio clips from NMED-T (.mat, WAV, or NPY)."""
     import librosa
 
     data_dir = Path(data_dir)
     audio_dir = data_dir / "audio"
     songs: dict[int, np.ndarray] = {}
     for song_idx in range(10):
-        candidates = list(audio_dir.glob(f"song_{song_idx:02d}.*")) + \
-                     list(audio_dir.glob(f"{song_idx:02d}.*"))
+        # Search order: .mat first (native NED-T format), then .npy/.wav/etc.
+        candidates = (
+            list(audio_dir.glob(f"song_{song_idx:02d}.mat")) +
+            list(audio_dir.glob(f"{song_idx:02d}.mat")) +
+            list(audio_dir.glob(f"song_{song_idx:02d}.*")) +
+            list(audio_dir.glob(f"{song_idx:02d}.*"))
+        )
         if not candidates:
             raise FileNotFoundError(f"No audio file found for song {song_idx} in {audio_dir}")
         path = candidates[0]
-        if path.suffix == ".npy":
-            audio = np.load(str(path))
+        if path.suffix == ".mat":
+            audio = _load_audio_from_mat(path)
+        elif path.suffix == ".npy":
+            audio = np.load(str(path)).astype(np.float32)
         else:
             audio, _ = librosa.load(str(path), sr=22050, mono=True)
-        songs[song_idx] = audio.astype(np.float32)
+        songs[song_idx] = audio
     return songs
 
 
